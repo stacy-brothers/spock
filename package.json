@@ -1,0 +1,29 @@
+{
+  "name": "spock",
+  "version": "0.0.1",
+  "engines": {
+    "node": "10.x"
+  },
+  "main": "main.js",
+  "scripts": {
+    "serve": "npm run open & npm run start",
+    "start": "node main.js",
+    "open": "start http://localhost:5000",
+    "watch-server": "npm-watch start"
+  },
+  "watch": {
+    "start": [
+      "./*.js",
+      "services/*.js"
+    ]
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "pg": "^7.6.1"
+  },
+  "devDependencies": {
+    "npm-watch": "^0.4.0"
+  }
+}

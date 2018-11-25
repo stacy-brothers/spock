@@ -1,0 +1,32 @@
+###
+
+POST http://localhost:5000/user
+Content-Type: application/json
+
+{
+   "username": "testing3",
+   "pass": "moretesting"
+}
+
+###
+
+###
+
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+  "username": "testing2",
+  "pass": "moretesting"
+}
+
+###
+
+POST http://localhost:5000/logout
+token: 62774e02d543962deedc061a9f7328e40730d15a
+
+###
+
+GET http://localhost:5000/user
+
+###
