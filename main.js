@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
-const userSrvc = require('./services/spockuser.service');
 const bodyParser = require('body-parser');
+const userSrvc = require('./services/spockuser.service');
+const surveySrvc = require('./services/survey.service');
 const PORT = process.env.PORT || 5000;
 
 let app = express();
@@ -46,8 +47,37 @@ app.post('/login', (req, res) => {
 
 app.post('/logout', (req, res) => {
     var token = req.get('token');
+    console.debug("logging out token: " + token );
     var resp = userSrvc.logout(token);
-    return success;
+    res.end(resp);
+});
+
+app.get('/info', (req, res) => {
+    res.end(JSON.stringify(userSrvc.userList()));
+})
+
+app.get('/survey', (req, res) => {
+    var token = req.get('token');
+    var username = userSrvc.validLogin(token);
+    surveySrvc.getNextSurvey(username)
+        .then( nextSurvey => {
+            res.end(JSON.stringify( nextSurvey));
+        })
+        .catch( error => {
+            res.end("{'error':'" + error + "'}");
+        })
+});
+
+app.post('/survey', (req, res) => {
+    var token = req.get('token');
+    var username = userSrvc.validLogin(token);
+    surveySrvc.saveSurvey(req.body, username)
+        .then( rslt => {
+            res.end(JSON.stringify( rslt ));
+        })
+        .catch( error => {
+            res.end("{'error':'" + error + "'}");
+        })
 });
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));

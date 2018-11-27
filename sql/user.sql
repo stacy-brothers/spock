@@ -28,7 +28,7 @@ create table survey_answer (
 
 create table user_answer (
   username varchar(30) references spock_user(username) not null,
-  survey_answer_id integer references surveu_answer(id) not null,
+  survey_answer_id integer references survey_answer(id) not null,
   primary key ( username, survey_answer_id )
 )
 

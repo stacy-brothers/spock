@@ -4,7 +4,7 @@ POST http://localhost:5000/user
 Content-Type: application/json
 
 {
-   "username": "testing3",
+   "username": "testing1",
    "pass": "moretesting"
 }
 
@@ -16,17 +16,46 @@ POST http://localhost:5000/login
 Content-Type: application/json
 
 {
-  "username": "testing2",
+  "username": "testing",
   "pass": "moretesting"
 }
 
 ###
 
 POST http://localhost:5000/logout
-token: 62774e02d543962deedc061a9f7328e40730d15a
+token: 71ddc534c33aea24eeb909dbfcc939e7fbf347ed
 
 ###
 
-GET http://localhost:5000/user
+GET http://localhost:5000/info
+
+###
+
+GET http://localhost:5000/survey
+token: 79616416f999cdd75216b4fbeac1caf661be8fa0
+
+###
+
+POST http://localhost:5000/survey
+Content-Type: application/json
+token: 7d69ca0ed61b8effa92f7432110cc46f309c7df6
+
+{
+  "surveyId": 2,
+  "questions": [
+    {
+      "questionId": 5,
+      "answerId": 8
+    },
+    {
+      "questionId": 6,
+      "answerId": 10
+    },
+    {
+      "questionId": 7,
+      "answerId": 13
+    }
+  ]
+}
 
 ###

@@ -9,6 +9,7 @@ const pool = new Pool({
 });
 
 var userList = {};
+var tokenList = {};
 
 function SpockUserService() {
 
@@ -28,7 +29,8 @@ SpockUserService.prototype.resisterUser = function ( username, pass ) {
                 addUser( username, hashIt(pass) )
                     .then( () => {
                         var token = hashIt(username + (new Date()).getTime());
-                        userList[token] = username;
+                        userList[username] = token;
+                        tokenList[token] = username;
                         resolve(token);
                     })
                     .catch( error => {
@@ -50,10 +52,17 @@ SpockUserService.prototype.login = function ( username, pass ) {
                 if (count && count == 0) {
                     console.warn("SpockUserService.registerUser: username " + username + " - " + pass + " invalid.");
                     reject("invalid login");
+                } else {
+                    var token = hashIt(username + (new Date()).getTime());
+                    if ( userList[username]) {
+                        console.debug(username + "already logged in...");
+                        delete tokenList[userList[username]];
+                    }
+                    userList[username] = token;
+                    tokenList[token] = username;
+                    console.debug(" valid login for " + username + " - " + pass + " - " + token);
+                    resolve(token);
                 }
-                var token = hashIt(username + (new Date()).getTime());
-                userList[token] = username;
-                resolve(token);
             })
             .catch(error => {
                 console.error(JSON.stringify(error));
@@ -62,15 +71,15 @@ SpockUserService.prototype.login = function ( username, pass ) {
     });
 };
 
-SpockUserService.prototype.logout = function ( username ) {
-    delete userList[username];
+SpockUserService.prototype.logout = function ( token ) {
+    delete userList[tokenList[token]];
+    delete tokenList[token];
     return "success";
 };
 
-
 SpockUserService.prototype.validLogin = function( token ) {
-    if ( userList[token] ) {
-        return userList[token];
+    if ( tokenList[token] ) {
+        return tokenList[token];
     } else {
         throw "invalid login";
     }
@@ -80,9 +89,9 @@ SpockUserService.prototype.userExists = function ( username ) {
     return pool.query('select count(*) from spock_user where username = $1', [username]);
 };
 
-SpockUserService.prototype.activeUsers = function () {
-    var values = Object.values(userList);
-    return values;
+SpockUserService.prototype.userList = function () {
+    var keys = Object.keys(userList);
+    return keys;
 }
 
 
