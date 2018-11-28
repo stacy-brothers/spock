@@ -3,6 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const userSrvc = require('./services/spockuser.service');
 const surveySrvc = require('./services/survey.service');
+const rpslsSrvc = require('./services/rpsls.service');
 const PORT = process.env.PORT || 5000;
 
 let app = express();
@@ -79,5 +80,54 @@ app.post('/survey', (req, res) => {
             res.end("{'error':'" + error + "'}");
         })
 });
+
+app.get('/rpsls/test', (req, res)=> {
+    console.debug("testing wait:" + JSON.stringify(rpslsSrvc.wait('testing')));
+    let game = rpslsSrvc.start('testing2','player');
+    console.debug("testing2 start:" + JSON.stringify(game));
+    console.debug("testing wait:" + JSON.stringify(rpslsSrvc.wait('testing')));
+    console.debug("----------- round 1 -------------");
+    console.debug("testing answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', 1, 'SPOCK')));
+    console.debug("get results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 1)));
+    console.debug("get results again: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 1)));
+    console.debug("testing2 answers LIZARD: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing2', 1, 'LIZARD')));
+    console.debug("get results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 1)));
+    console.debug("----------- round 2 -------------");
+    console.debug("testing answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', 2, 'SPOCK')));
+    console.debug("testing2 answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing2', 2, 'SPOCK')));
+    console.debug("get results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 2)));
+    console.debug("get again results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 2)));
+    console.debug("----------- round 3 -------------");
+    console.debug("testing answers SCISSORS: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', 3, 'SPOCK')));
+    console.debug("testing2 answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing2', 3, 'SCISSORS')));
+    console.debug("get results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 3)));
+    console.debug("get again results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 3)));
+    console.debug("----------- round 4 -------------");
+    console.debug("testing answers LIZARD: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', 4, 'LIZARD')));
+    console.debug("testing2 answers LIZARD: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing2', 4, 'LIZARD')));
+    console.debug("get results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 4)));
+    console.debug("get again results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 4)));
+    console.debug("----------- round 5 -------------");
+    console.debug("testing answers SCISSORS: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', 5, 'SCISSORS')));
+    console.debug("testing2 answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing2', 5, 'SPOCK')));
+    console.debug("get results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 5)));
+    console.debug("get again results: " + JSON.stringify(rpslsSrvc.getResult(game.gameId, 5)));
+    console.debug("----------- vs Computer round 1 -------------");
+    game = rpslsSrvc.start('testing','computer');
+    console.debug("testing start:" + JSON.stringify(game));
+    let round = 1;
+    console.debug("testing answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', 1, 'SPOCK')));
+    let rslt = rpslsSrvc.getResult(game.gameId, round);
+    console.debug("get results: " + JSON.stringify(rslt));
+    while ( !rslt.finalWinner ) {
+        round++;
+        console.debug("----------- vs Computer round " + round + " -------------");
+        console.debug("testing answers SPOCK: " + JSON.stringify(rpslsSrvc.choose(game.gameId, 'testing', round, 'SPOCK')));
+        rslt = rpslsSrvc.getResult(game.gameId, round);
+        console.debug("get results: " + JSON.stringify(rslt));
+    }
+
+    res.end("done");
+})
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));

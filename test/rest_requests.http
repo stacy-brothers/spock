@@ -4,7 +4,7 @@ POST http://localhost:5000/user
 Content-Type: application/json
 
 {
-   "username": "testing1",
+   "username": "testing2",
    "pass": "moretesting"
 }
 
@@ -57,5 +57,9 @@ token: 7d69ca0ed61b8effa92f7432110cc46f309c7df6
     }
   ]
 }
+
+###
+
+GET http://localhost:5000/rpsls/test
 
 ###
