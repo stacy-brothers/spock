@@ -17,7 +17,7 @@ SurveyService.prototype.getNextSurvey = function ( username ) {
     return new Promise((resolve, reject) => {
         getSurveysDone(username)
             .then( done => {
-                if ( done.length === 0 ) done = "-1";
+                if ( done.length === 0 ) done = [-1];
                 pool.query( 'select id, descr from survey where not id = ANY($1::int[]) limit 1', [done] )
                     .then( rslt => {
                         console.debug("available survey: " + JSON.stringify(rslt));

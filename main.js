@@ -37,12 +37,13 @@ app.post('/user', (req, res) => {
 app.post('/login', (req, res) => {
     var username = req.body.username;
     var pass = req.body.pass;
+    res.type('application/json');
     userSrvc.login(username, pass)
         .then( token => {
-            res.end("{'token':'" + token + "'}");
+            res.end('{"token":"' + token + '"}');
         })
         .catch( error => {
-            res.end("{'error':'" + error + "'}");
+            res.end('{"error":"' + error + '"}');
         });
 });
 
@@ -62,10 +63,10 @@ app.get('/survey', (req, res) => {
     var username = userSrvc.validLogin(token);
     surveySrvc.getNextSurvey(username)
         .then( nextSurvey => {
-            res.end(JSON.stringify( nextSurvey));
+            res.end(JSON.stringify(nextSurvey));
         })
         .catch( error => {
-            res.end("{'error':'" + error + "'}");
+            res.end(JSON.stringify({"error": error }));
         })
 });
 
@@ -80,6 +81,47 @@ app.post('/survey', (req, res) => {
             res.end("{'error':'" + error + "'}");
         })
 });
+
+ app.use(function (req, res, next) {
+     rpslsSrvc.dumpInfo();
+     next();
+ });
+
+app.get('/rpsls', (req, res)=> {
+    let token = req.get('token');
+    let username = userSrvc.validLogin(token);
+    let start = req.query.start;
+    let rtn = {};
+    if ( start && start.trim().length > 0 ) {
+        rtn = rpslsSrvc.start(username, start);
+    } else {
+        // if there is no start then it is a wait request
+        rtn = rpslsSrvc.wait(username);
+    }
+    res.end(JSON.stringify(rtn));
+});
+
+app.get('/rpsls/:gameId/:roundNum', (req, res)=> {
+    let token = req.get('token');
+    let username = userSrvc.validLogin(token);
+    let gameId = req.params.gameId;
+    let roundNum = req.params.roundNum;
+    let rtn = rpslsSrvc.getResult(gameId, roundNum);
+    res.end(JSON.stringify(rtn));
+});
+
+app.post('/rpsls/:gameId/:roundNum', (req, res)=> {
+    let token = req.get('token');
+    let username = userSrvc.validLogin(token);
+    let gameId = req.params.gameId;
+    let roundNum = req.params.roundNum;
+    let choice = req.body.choice;
+    let rtn = rpslsSrvc.choose(gameId,username,roundNum,choice);
+    res.end(JSON.stringify(rtn));
+
+});
+
+
 
 app.get('/rpsls/test', (req, res)=> {
     console.debug("testing wait:" + JSON.stringify(rpslsSrvc.wait('testing')));

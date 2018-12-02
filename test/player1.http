@@ -1,0 +1,103 @@
+###
+# register user
+POST http://localhost:5000/user
+Content-Type: application/json
+
+{
+   "username": "testing1",
+   "pass": "moretesting"
+}
+
+> {%
+  client.log(response.body.token);
+  client.global.set("token1", response.body.token);
+%}
+
+###
+# login user
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+  "username": "testing1",
+  "pass": "moretesting"
+}
+
+> {%
+  client.log(response.body.token);
+  client.global.set("token1", response.body.token);
+%}
+
+###
+# get a survey
+GET http://localhost:5000/survey
+token: {{token1}}
+
+###
+# save answers to survey
+POST http://localhost:5000/survey
+Content-Type: application/json
+token: {{token1}}
+
+{
+  "surveyId": 2,
+  "questions": [
+    {
+      "questionId": 5,
+      "answerId": 8
+    },
+    {
+      "questionId": 6,
+      "answerId": 10
+    },
+    {
+      "questionId": 7,
+      "answerId": 13
+    }
+  ]
+}
+
+###
+
+GET http://localhost:5000/rpsls/test
+
+###
+# start game against any player
+GET http://localhost:5000/rpsls?start=player
+Content-Type: application/json
+token: {{token1}}
+
+###
+# start game against computer
+GET http://localhost:5000/rpsls?start=computer
+Content-Type: application/json
+token: {{token1}}
+
+###
+# wait for another player to start, keep calling this every 5 sec to continue waiting
+GET http://localhost:5000/rpsls
+Content-Type: application/json
+token: {{token1}}
+
+###
+# when we have a gameId choose for roundNum (rpsls/:gameId/:roundNum)
+POST http://localhost:5000/rpsls/4/1
+Content-Type: application/json
+token: {{token1}}
+
+{
+  "choice":"ROCK"
+}
+
+###
+# get the results for the round
+GET http://localhost:5000/rpsls/4/1
+Content-Type: application/json
+token: {{token1}}
+
+###
+# logout user
+POST http://localhost:5000/logout
+token: {{token1}}
+
+###

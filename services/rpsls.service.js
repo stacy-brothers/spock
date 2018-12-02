@@ -64,22 +64,34 @@ RPSLSService.prototype.start = function ( username, type ) {
 };
 
 RPSLSService.prototype.wait = function ( username ) {
+    console.debug("player: " + username + " is checking waiting queue...");
     // see if they got placed
     let game = games.find(g => g.player2 === username);
+    if ( !game ) game = games.find(g => g.player1 === username);
     if ( game && game.complete != true ) {
         // they are in a game, return the start info.
         return game;
     } else {
+        // am I in the queue?
         userQueue = QueueStore.get(username);
         if (!userQueue) {
-            userQueue = {
-                username: username,
-                count: 0,
-                last: (new Date()).getTime()
-            };
-            QueueStore.add(userQueue);
+            // check to see if someone slipped into the queue since I started...
+            if ( queue.length > 0 ) {
+                // they did, start a game
+                let opponent = QueueStore.shft();
+                console.debug("queue should be empty! " + JSON.stringify(queue));
+                return startGame( username, opponent.username );
+            } else {
+                // nope,  add me to the queue...
+                userQueue = {
+                    username: username,
+                    count: 0,
+                    last: (new Date()).getTime()
+                };
+                QueueStore.add(userQueue);
+            }
         } else {
-            if ( userQueue.count === 10 ) {
+            if ( userQueue.count === 5 ) {
                 QueueStore.rem(username);
                 return {status:'waited too long'};
             } else {
@@ -93,16 +105,21 @@ RPSLSService.prototype.wait = function ( username ) {
 };
 
 RPSLSService.prototype.choose = function ( gameId, username, roundNum, choice ) {
-    let game = games.find(g => g.gameId === gameId);
-    let round = game.rounds.find(r => r.roundNum === roundNum);
+    let game = games.find(g => g.gameId === Number(gameId));
+    console.debug("gameId: " + gameId + " - game:" + JSON.stringify(game));
+    let round = game.rounds.find(r => r.roundNum === Number(roundNum));
+    console.debug("roundNum:" + roundNum + " - round:" + JSON.stringify(round));
+    console.debug("username: " + username + " - choice: " + choice);
     if ( !round ) {
         round = {
-            roundNum: roundNum,
+            roundNum: Number(roundNum),
             answer1: "NONE",
             answer2: "NONE",
             winner: "NONE"
         };
         game.rounds.push(round);
+    } else {
+        if ( round.winner != "NONE" ) return {error:'round complete'};
     }
     if ( game.player1 === username ) {
         round.answer1 = choice;
@@ -120,15 +137,18 @@ RPSLSService.prototype.choose = function ( gameId, username, roundNum, choice ) 
 };
 
 RPSLSService.prototype.getResult = function ( gameId, roundNum ) {
-    let game = games.find(g => g.gameId === gameId);
-    let round = game.rounds.find(r => r.roundNum === roundNum);
+    let game = games.find(g => g.gameId === Number(gameId));
+    console.debug("gameId: " + gameId + " - game:" + JSON.stringify(game));
+    let round = game.rounds.find(r => r.roundNum === Number(roundNum));
+    console.debug("roundNum:" + roundNum + " - round:" + JSON.stringify(round));
     if ( round.answer1 != 'NONE' && round.answer2 != 'NONE' ) {
         let winnerNum = getWinner( round.answer1, round.answer2 );
         winner = 'Cat';
         if ( winnerNum === 1 ) winner = game.player1;
         else if ( winnerNum === 2 ) winner = game.player2;
+        console.debug("winnerNum: " + winnerNum + " - " + winner);
         result = {
-            roundNum: roundNum,
+            roundNum: Number(roundNum),
             player1: game.player1,
             answer1: round.answer1,
             player2: game.player2,
@@ -173,45 +193,51 @@ RPSLSService.prototype.getResult = function ( gameId, roundNum ) {
     }
 };
 
+RPSLSService.prototype.dumpInfo = function () {
+    console.debug("-----------------------------------------");
+    console.debug("queue: " + JSON.stringify(queue) + " ");
+    console.debug("seq: " + seq  + " ");
+    console.debug("games: " + JSON.stringify(games) + " ");
+    console.debug("-----------------------------------------");
+};
+
 /**
  * Scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons Spock, Spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves Spock, Spock vaporizes rock, and as it always has, rock crushes scissors.
  */
 function getWinner( one, two ) {
+    let winner = 0;
     if ( one === 'SCISSORS' ) {
-        if ( two === 'SCISSORS' ) return 0;
-        if ( two === 'PAPER' ) return 1;
-        if ( two === 'LIZARD') return 1;
-        if ( two === 'SPOCK' ) return 2;
-        if ( two === 'ROCK' ) return 2;
+        if ( two === 'PAPER' ) winner = 1;
+        else if ( two === 'LIZARD') winner = 1;
+        else if ( two === 'SPOCK' ) winner = 2;
+        else if ( two === 'ROCK' ) winner = 2;
     }
-    if ( one === 'PAPER' ) {
-        if ( two === 'PAPER' ) return 0;
-        if ( two === 'SCISSORS' ) return 1;
-        if ( two === 'SPOCK') return 1;
-        if ( two === 'SCISSORS' ) return 2;
-        if ( two === 'LIZARD' ) return 2;
+    else if ( one === 'PAPER' ) {
+        if ( two === 'ROCK' ) winner = 1;
+        else if ( two === 'SPOCK') winner = 1;
+        else if ( two === 'SCISSORS' ) winner = 2;
+        else if ( two === 'LIZARD' ) winner = 2;
     }
-    if ( one === 'LIZARD' ) {
-        if ( two === 'LIZARD' ) return 0;
-        if ( two === 'SPOCK' ) return 1;
-        if ( two === 'PAPER') return 1;
-        if ( two === 'SCISSORS' ) return 2;
-        if ( two === 'SCISSORS' ) return 2;
+    else if ( one === 'LIZARD' ) {
+        if ( two === 'SPOCK' ) winner = 1;
+        else if ( two === 'PAPER') winner = 1;
+        else if ( two === 'SCISSORS' ) winner = 2;
+        else if ( two === 'ROCK' ) winner = 2;
     }
-    if ( one === 'SPOCK' ) {
-        if ( two === 'SPOCK' ) return 0;
-        if ( two === 'SCISSORS' ) return 1;
-        if ( two === 'ROCK') return 1;
-        if ( two === 'LIZARD' ) return 2;
-        if ( two === 'PAPER' ) return 2;
+    else if ( one === 'SPOCK' ) {
+        if ( two === 'SCISSORS' ) winner = 1;
+        else if ( two === 'ROCK') winner = 1;
+        else if ( two === 'LIZARD' ) winner = 2;
+        else if ( two === 'PAPER' ) winner = 2;
     }
-    if ( one === 'ROCK' ) {
-        if ( two === 'ROCK' ) return 0;
-        if ( two === 'SCISSORS' ) return 1;
-        if ( two === 'LIZARD') return 1;
-        if ( two === 'SPOCK' ) return 2;
-        if ( two === 'PAPER' ) return 2;
+    else if ( one === 'ROCK' ) {
+        if ( two === 'SCISSORS' ) winner = 1;
+        else if ( two === 'LIZARD') winner = 1;
+        else if ( two === 'SPOCK' ) winner = 2;
+        else if ( two === 'PAPER' ) winner = 2;
     }
+    console.debug(one + " vs " + two + " - winner is " + (winner===1?one:two));
+    return winner;
 }
 
 function startGame( player1, player2 ) {
@@ -227,11 +253,6 @@ function startGame( player1, player2 ) {
             winner: "NONE"
         }]
     };
-    if ( player2 === 'computer') {
-        let choices = ['ROCK','PAPER','SCISSORS','LIZARD','SPOCK'];
-        let i = Math.floor(Math.random() * 4 );
-        newGame.rounds[0].answer2 = choices[i];
-    }
     games.push(newGame);
     return newGame;
 }
