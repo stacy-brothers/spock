@@ -8,6 +8,21 @@ const PORT = process.env.PORT || 5000;
 
 let app = express();
 
+// app.use(require('morgan')('dev'));
+// var session = require('express-session');
+// var FileStore = require('session-file-store')(session);
+//
+// app.use(session({
+//     name: 'spock.sid',
+//     secret: 'whatever',
+//     saveUninitialized: true,
+//     resave: true,
+//     store: new FileStore(),
+//     cookie: {
+//         maxAge: 300000
+//     }
+// }));
+
 app.set('views', path.join(__dirname, 'views'));
 
 app.set('view engine', 'ejs');
@@ -20,18 +35,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.get('/', (req, res) => {
     res.sendFile('index.html');
-});
-
-app.post('/user', (req, res) => {
-    var username = req.body.username;
-    var pass = req.body.pass;
-    userSrvc.resisterUser(username, pass)
-        .then( token => {
-            res.end("{'token':'" + token + "'}");
-        })
-        .catch( error => {
-            res.end("{'error':'" + error + "'}");
-        });
 });
 
 app.post('/login', (req, res) => {
@@ -47,9 +50,33 @@ app.post('/login', (req, res) => {
         });
 });
 
+app.post('/user', (req, res) => {
+    var username = req.body.username;
+    var pass = req.body.pass;
+    userSrvc.resisterUser(username, pass)
+        .then( token => {
+            console.log("token:" + token);
+            res.end(JSON.stringify({token:token}));
+        })
+        .catch( error => {
+            res.end("{'error':'" + error + "'}");
+        });
+});
+
+app.use( (req, res, next) => {
+    var token = req.get('token');
+    try {
+        var username = userSrvc.validLogin(token);
+        req.username = username;
+        console.debug("username in use: " + username);
+        next();
+    } catch (e) {
+        res.end(JSON.stringify({ error: e.message }));
+    }
+});
+
 app.post('/logout', (req, res) => {
     var token = req.get('token');
-    console.debug("logging out token: " + token );
     var resp = userSrvc.logout(token);
     res.end(resp);
 });
@@ -59,9 +86,7 @@ app.get('/info', (req, res) => {
 })
 
 app.get('/survey', (req, res) => {
-    var token = req.get('token');
-    var username = userSrvc.validLogin(token);
-    surveySrvc.getNextSurvey(username)
+    surveySrvc.getNextSurvey(req.username)
         .then( nextSurvey => {
             res.end(JSON.stringify(nextSurvey));
         })
@@ -71,9 +96,7 @@ app.get('/survey', (req, res) => {
 });
 
 app.post('/survey', (req, res) => {
-    var token = req.get('token');
-    var username = userSrvc.validLogin(token);
-    surveySrvc.saveSurvey(req.body, username)
+    surveySrvc.saveSurvey(req.body, req.username)
         .then( rslt => {
             res.end(JSON.stringify( rslt ));
         })
@@ -88,22 +111,18 @@ app.post('/survey', (req, res) => {
  });
 
 app.get('/rpsls', (req, res)=> {
-    let token = req.get('token');
-    let username = userSrvc.validLogin(token);
     let start = req.query.start;
     let rtn = {};
     if ( start && start.trim().length > 0 ) {
-        rtn = rpslsSrvc.start(username, start);
+        rtn = rpslsSrvc.start(req.username, start);
     } else {
         // if there is no start then it is a wait request
-        rtn = rpslsSrvc.wait(username);
+        rtn = rpslsSrvc.wait(req.username);
     }
     res.end(JSON.stringify(rtn));
 });
 
 app.get('/rpsls/:gameId/:roundNum', (req, res)=> {
-    let token = req.get('token');
-    let username = userSrvc.validLogin(token);
     let gameId = req.params.gameId;
     let roundNum = req.params.roundNum;
     let rtn = rpslsSrvc.getResult(gameId, roundNum);
@@ -111,12 +130,10 @@ app.get('/rpsls/:gameId/:roundNum', (req, res)=> {
 });
 
 app.post('/rpsls/:gameId/:roundNum', (req, res)=> {
-    let token = req.get('token');
-    let username = userSrvc.validLogin(token);
     let gameId = req.params.gameId;
     let roundNum = req.params.roundNum;
     let choice = req.body.choice;
-    let rtn = rpslsSrvc.choose(gameId,username,roundNum,choice);
+    let rtn = rpslsSrvc.choose(gameId,req.username,roundNum,choice);
     res.end(JSON.stringify(rtn));
 
 });

@@ -1,0 +1,30 @@
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+}
+
+.titleDiv {
+    font-size: 1.6em;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.noHeader {
+    flex-grow: 1;
+}
+.noFooter {
+    flex-grow: 3;
+}
+
+.userPassBox {
+    flex: 2 2 auto;
+}
+
+input {
+    font-size: 1em;
+}
