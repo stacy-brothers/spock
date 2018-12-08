@@ -6,6 +6,7 @@ body {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
+    font-family: Impact;
 }
 
 .titleDiv {
@@ -23,8 +24,35 @@ body {
 
 .userPassBox {
     flex: 2 2 auto;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: space-evenly;
 }
 
 input {
-    font-size: 1em;
+    font-size: 1.1em;
 }
+
+.inputLabel {
+    font-size: 0.9em;
+}
+
+.inputContainer {
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+}
+
+.registerBtn {
+    align-self: center;
+}
+
+.spockBtn {
+    background-color: darkolivegreen;
+    border: 2px solid darkgray;
+    color: whitesmoke;
+    padding: 5px 20px 5px 20px;
+    border-radius: 6px;
+}
+

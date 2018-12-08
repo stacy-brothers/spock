@@ -15,6 +15,7 @@ function doRegister() {
             localStorage.setItem('username', user);
             window.location = "landing.html";
         } else {
+            // TODO: make a better modal popup...
             alert('Request failed.  Returned status of ' + xhr.status);
         }
     };

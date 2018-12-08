@@ -43,10 +43,14 @@ app.post('/login', (req, res) => {
     res.type('application/json');
     userSrvc.login(username, pass)
         .then( token => {
-            res.end('{"token":"' + token + '"}');
+            res.end(JSON.stringify({token:token}));
         })
         .catch( error => {
-            res.end('{"error":"' + error + '"}');
+            if (error === 'invalid login') {
+                res.status(401).send(JSON.stringify({error:error}));
+            } else {
+                res.status(400).send(JSON.stringify({error:error}));
+            }
         });
 });
 
@@ -59,7 +63,7 @@ app.post('/user', (req, res) => {
             res.end(JSON.stringify({token:token}));
         })
         .catch( error => {
-            res.end("{'error':'" + error + "'}");
+            res.status(400).send(JSON.stringify({error:error}));
         });
 });
 
