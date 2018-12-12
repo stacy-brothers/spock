@@ -19,7 +19,7 @@ POST http://localhost:5000/login
 Content-Type: application/json
 
 {
-  "username": "testing1",
+  "username": "testing",
   "pass": "moretesting"
 }
 
@@ -56,6 +56,12 @@ token: {{token1}}
     }
   ]
 }
+
+###
+
+GET http://localhost:5000/survey/stats
+token: {{token1}}
+
 
 ###
 

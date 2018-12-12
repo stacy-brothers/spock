@@ -87,7 +87,7 @@ app.post('/logout', (req, res) => {
 
 app.get('/info', (req, res) => {
     res.end(JSON.stringify(userSrvc.userList()));
-})
+});
 
 app.get('/survey', (req, res) => {
     surveySrvc.getNextSurvey(req.username)
@@ -105,8 +105,18 @@ app.post('/survey', (req, res) => {
             res.end(JSON.stringify( rslt ));
         })
         .catch( error => {
-            res.end("{'error':'" + error + "'}");
+            res.end(JSON.stringify({error:error}));
+        });
+});
+
+app.get('/survey/stats', (req, res) => {
+    surveySrvc.getStats(req.username)
+        .then( rslt => {
+            res.end(JSON.stringify( rslt ));
         })
+        .catch( error => {
+            res.end(JSON.stringify({error:error}));
+        });
 });
 
  app.use(function (req, res, next) {

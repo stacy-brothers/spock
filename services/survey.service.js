@@ -112,6 +112,103 @@ SurveyService.prototype.saveSurvey = function( survey, username ) {
     });
 };
 
+
+SurveyService.prototype.getStats = function( username ) {
+    return new Promise((resolve, reject) => {
+        let stats = [];
+        getSurveysDone(username)
+            .then( done => {
+                if (done.length === 0) resolve(stats);
+                pool.query( 'select s.id as survey_id, s.descr as survey, q.id as question_id, ' +
+                             '      q.value as question, a.id as answer_id, a.value as answer ' +
+                             ' from survey s, survey_question q, survey_answer a ' +
+                             'where s.id = q.survey_id ' +
+                             '  and q.id = a.question_id ' +
+                             '  and s.id = ANY($1::int[])' +
+                             'order by q.id, s.id, a.id', [done])
+                    .then( rslt => {
+                        if (rslt && rslt.rowCount > 0) {
+                            var rows = rslt.rows;
+                            var curS = {};
+                            var curQ = {};
+                            rows.forEach( s => {
+                               // the query was order so make some assumptions
+                                if ( !curS.id || curS.id != s.survey_id ) {
+                                    curS = {
+                                        id: s.survey_id,
+                                        descr: s.survey,
+                                        questions: []
+                                    };
+                                    curQ = [];
+                                    stats.push(curS);
+                                }
+                                if ( !curQ.id || curQ.id != s.question_id ){
+                                    curQ = {
+                                        id: s.question_id,
+                                        value: s.question,
+                                        answers: []
+                                    }
+                                    curS.questions.push(curQ);
+                                }
+                                let answer = {
+                                    id: s.answer_id,
+                                    value: s.answer,
+                                    count: 0
+                                }
+                                curQ.answers.push(answer);
+                            });
+                            pool.query('select u.survey_id, u.survey_question_id, u.survey_answer_id, count(*) as count\n' +
+                                '         from user_answer u, survey s, survey_question q, survey_answer a ' +
+                                '        where u.survey_id = s.id' +
+                                '          and u.survey_question_id = q.id' +
+                                '          and u.survey_answer_id = a.id ' +
+                                '          and s.id = ANY($1::int[])' +
+                                '        group by u.survey_id, u.survey_question_id, u.survey_answer_id ' +
+                                '        order by u.survey_id, u.survey_question_id, u.survey_answer_id ', [done])
+                                .then( rslt => {
+                                    if (rslt && rslt.rowCount > 0) {
+                                        counts = rslt.rows;
+                                        console.log("counts: " + JSON.stringify(counts));
+                                        counts.forEach( count => {
+                                            console.log("count.survey_id: " + count.survey_id);
+                                            let countId = Number(count.survey_id);
+                                            curS = stats.find( s => { return s.id === countId; });
+                                            console.log("curS: " + JSON.stringify(curS));
+                                            if ( curS ) {
+                                                console.log("curS exists! look for question_id: " + count.survey_question_id );
+                                                curQ = curS.questions.find( q => { return q.id === count.survey_question_id; });
+                                                console.log("question: " + JSON.stringify(curQ));
+                                                if ( curQ.id ) {
+                                                    let curA = curQ.answers.find( a => { return a.id === count.survey_answer_id; });
+                                                    console.log("answer: " + JSON.stringify(curA));
+                                                    if ( curA ) {
+                                                        console.log("curA exists! assign count = " + count.count);
+                                                        curA.count = Number(count.count);
+                                                        console.log("curA: " + JSON.stringify(curA));
+                                                        console.log("stats: " + JSON.stringify(stats));
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        console.log("stats at the end...: " + JSON.stringify(stats));
+                                    }
+                                    resolve(stats);
+                                })
+                                .catch( error => {
+                                    reject(error);
+                                });
+                        }
+                    })
+                    .catch( error => {
+                        reject(error);
+                    });
+            })
+            .catch( error => {
+                reject(error);
+            });
+    });
+};
+
 /**
  * the surveysDone list is a comma separated list of surveys that the user has completed.
  */

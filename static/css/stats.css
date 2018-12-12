@@ -1,0 +1,18 @@
+body {
+    justify-content: flex-start;
+}
+.surveyList {
+    flex: 1 1 auto;
+}
+.surveyTitle {
+    margin-top: 20px;
+    font-size: 1.2em;
+}
+.qDiv {
+    font-size: 1em;
+    margin-left: 20px;
+}
+.aDiv {
+    font-size: 0.9em;
+    margin-left: 40px;
+}
