@@ -2,102 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link  rel="stylesheet" type="text/css" href="css/spock.css">
     <title>Title</title>
+    <style type="text/css">
+        .okBtn {
+            max-width: 8em;
+            margin-bottom: 7px;
+            width: 100%
+        }
+        .questionList {
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+        }
+        .answerBtn {
+            flex: 1 1 auto;
+            margin-right: 3px;
+        }
+        .answerRow {
+            display: flex;
+            flex-flow: row nowrap;
+        }
+    </style>
 </head>
 <body>
-    <div class="title"><span id="surveyTitle">Loading Survey...</span></div>
-    <div id="questionList"></div>
-<script type="text/javascript">
-    let survey = {
-        id: 0,
-        descr: "",
-        questions: []
-    };
-
-    let question = {
-        id: 0,
-        question: "",
-        answers: []
-    };
-
-    let answer = {
-        id: 0,
-        answer: ""
-    };
-
-    let request = {
-        surveyId: 0,
-        questions: []
-    };
-
-    let questionsLeft = -1;
-
-    let token = localStorage.getItem("token");
-
-    document.getElementsByTagName("body")[0].onload = function() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'survey');
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                survey = JSON.parse(xhr.responseText);
-                document.getElementById("surveyTitle").innerText = survey.descr;
-                request.surveyId = survey.id;
-                questionsLeft = survey.questions.length;
-                console.log(survey.questions.length + " questions!");
-                let questionList = document.getElementById('questionList');
-                for ( let i = 0; i < survey.questions.length; i++) {
-                    question = survey.questions[i];
-                    console.log("question " + question.id + " - " + question.question);
-                    newQ = document.createElement('DIV');
-                    newQ.className = "questionDiv";
-                    newQ.id = "quest" + question.id;
-                    let qc = "<span class='questionHdr'>" + question.id + " - " + question.question + "</span><div id='answerRow'>"
-                    for ( let j = 0; j < question.answers.length; j++ ) {
-                        answer = question.answers[j];
-                        qc = qc + "<button onclick='selectAns(" + question.id + "," + answer.id + ");'>" + answer.answer + "</button>";
-                    }
-                    qc = qc + "</div>";
-                    newQ.innerHTML = qc;
-                    questionList.appendChild(newQ);
-                }
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send();
-    };
-
-    function selectAns( q, a ) {
-        let ans = {
-            "questionId": q,
-            "answerId": a
-        }
-        request.questions.push(ans);
-        let qDiv = document.getElementById('quest' + q);
-        qDiv.style.display = 'none';
-        questionsLeft--;
-        if ( questionsLeft === 0) submitSurvey();
-    }
-
-    function submitSurvey() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'survey');
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                alert(xhr.responseText);
-                window.location = "rpsls.html";
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send(JSON.stringify(request));
-    }
-
-</script>
+    <div class="titleDiv" id="surveyTitle">Loading Survey...</div>
+    <div class="questionList" id="questionList"></div>
+    <div class="noFooter">&nbsp;</div>
+<script type="text/javascript" src="js/survey.js"></script>
 </body>
 </html>

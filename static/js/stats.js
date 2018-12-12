@@ -10,6 +10,7 @@ document.getElementsByTagName("body")[0].onload = function() {
         if (xhr.status === 200) {
             console.log(xhr.responseText);
             let surveyList =  JSON.parse(xhr.responseText);
+            // TODO: if list is empty then tell them to go play a game
             let parent = document.getElementById('surveyList');
             surveyList.forEach( survey => {
                 let title = document.createElement('div');

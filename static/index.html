@@ -2,40 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Take a survey, play a game.</title>
+    <link  rel="stylesheet" type="text/css" href="css/spock.css">
 </head>
 <body>
-    <div class="headerDiv">Please Sign In</div>
-    <div class="contentDiv">
-        <div><div>User Name</div><input type="text" id="username"></div>
-        <div><div>Password</div><input type="password" id="pass"></div>
-        <div><button onclick="doLogin()">login</button> </div>
-        <div>&nbsp;</div>
-        <div>No User Name?  <a href="register.html">Register!</a> </div>
+    <div class="noHeader">&nbsp;</div>
+    <div class="titleDiv">Please Sign In</div>
+    <div class="userPassBox">
+        <div><div class="inputLabel">User Name</div><input type="text" id="username"></div>
+        <div><div class="inputLabel">Password</div><input type="password" id="pass"></div>
+        <div class="registerBtn spockBtn" onclick="doLogin()">login</div>
+        <div class="inputLabel">No User Name?  <a href="register.html">Register!</a> </div>
     </div>
-<script type="text/javascript">
-    function doLogin() {
-        let user = document.getElementById('username').value;
-        let pass = document.getElementById('pass').value;
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'login');
-        xhr.setRequestHeader("Content-Type","application/json");
-        let body = {
-            username: user,
-            pass: pass
-        };
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                var resp = JSON.parse(xhr.responseText);
-                localStorage.setItem("token", resp.token);
-                localStorage.setItem('username', user);
-                window.location = "landing.html";
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send(JSON.stringify(body));
-    }
-</script>
+    <div class="noFooter">&nbsp;</div>
+<script type="text/javascript" src="./js/index.js"></script>
 </body>
 </html>
