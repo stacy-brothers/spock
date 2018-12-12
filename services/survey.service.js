@@ -7,7 +7,7 @@ const pool = new Pool({
     ssl: true
 });
 
-const surveysDone = {};
+const surveysDone = [];
 
 function SurveyService() {
 
@@ -103,6 +103,7 @@ SurveyService.prototype.saveSurvey = function( survey, username ) {
         pool.query("INSERT INTO user_answer (username, survey_id, survey_question_id, survey_answer_id) SELECT $1, $2, t.b, t.c FROM unnest($3::int[], $4::int[]) AS t(b,c);", [username, surveyId, questions, answers])
             .then( rslt => {
                 console.debug(JSON.stringify(rslt));
+                surveysDone[username].push(surveyId);
                 resolve("success");
             })
             .catch( error => {
