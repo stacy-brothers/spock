@@ -226,6 +226,7 @@ function getSurveysDone(username) {
                     if ( rslt.rowCount === 0 ) {
                         surveysDone[username] = '';
                         console.debug("Username " + username + " hasn't done any surveys.");
+                        surveysDone[username] = [];
                         resolve('');
                     } else {
                         var rows = rslt.rows;
