@@ -1,24 +1,13 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
-
-a {
-  color: #00B7FF;
-}
-
-.waitDiv {
-  display: inline;
+.showingDiv {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
 }
 
 .hiddenDiv {
   display: none;
 }
 
-.checkingDiv {
-  display: inline;
-}
-
-.playDiv {
-  display: inline;
+.spockBtn {
+  margin-top: 10px;
 }

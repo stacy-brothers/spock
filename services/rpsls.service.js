@@ -142,20 +142,21 @@ RPSLSService.prototype.getResult = function ( gameId, roundNum ) {
     let round = game.rounds.find(r => r.roundNum === Number(roundNum));
     console.debug("roundNum:" + roundNum + " - round:" + JSON.stringify(round));
     if ( round.answer1 != 'NONE' && round.answer2 != 'NONE' ) {
-        let winnerNum = getWinner( round.answer1, round.answer2 );
-        winner = 'Cat';
-        if ( winnerNum === 1 ) winner = game.player1;
-        else if ( winnerNum === 2 ) winner = game.player2;
-        console.debug("winnerNum: " + winnerNum + " - " + winner);
+        let winner = getWinner( round.answer1, round.answer2 );
+        wins = 'Cat';
+        if ( winner.num === 1 ) wins = game.player1;
+        else if ( winner.num === 2 ) wins = game.player2;
+        console.debug("winner.num: " + winner.num + " - " + wins);
         result = {
             roundNum: Number(roundNum),
             player1: game.player1,
             answer1: round.answer1,
             player2: game.player2,
             answer2: round.answer2,
-            winner: winner
+            winner: wins,
+            verb: winner.verb
         };
-        round.winner = winner;
+        round.winner = wins;
         // need to see if there is a final winner
         score1 = 0;
         score2 = 0;
@@ -205,38 +206,100 @@ RPSLSService.prototype.dumpInfo = function () {
  * Scissors cuts paper, paper covers rock, rock crushes lizard, lizard poisons Spock, Spock smashes scissors, scissors decapitates lizard, lizard eats paper, paper disproves Spock, Spock vaporizes rock, and as it always has, rock crushes scissors.
  */
 function getWinner( one, two ) {
-    let winner = 0;
+    let winner = {
+        num: 0,
+        verb: ""
+    };
     if ( one === 'SCISSORS' ) {
-        if ( two === 'PAPER' ) winner = 1;
-        else if ( two === 'LIZARD') winner = 1;
-        else if ( two === 'SPOCK' ) winner = 2;
-        else if ( two === 'ROCK' ) winner = 2;
+        if ( two === 'PAPER' ) {
+            winner.num = 1;
+            winner.verb = 'cut'
+        }
+        else if ( two === 'LIZARD') {
+            winner.num = 1;
+            winner.verb = 'decapitates'
+        }
+        else if ( two === 'SPOCK' ) {
+            winner.num = 2;
+            winner.verb = 'smashes'
+        }
+        else if ( two === 'ROCK' ) {
+            winner.num = 2;
+            winner.verb = 'crushes'
+        }
     }
     else if ( one === 'PAPER' ) {
-        if ( two === 'ROCK' ) winner = 1;
-        else if ( two === 'SPOCK') winner = 1;
-        else if ( two === 'SCISSORS' ) winner = 2;
-        else if ( two === 'LIZARD' ) winner = 2;
+        if ( two === 'ROCK' ) {
+            winner.num = 1;
+            winner.verb = 'covers'
+        }
+        else if ( two === 'SPOCK') {
+            winner.num = 1;
+            winner.verb = 'disproves'
+        }
+        else if ( two === 'SCISSORS' ) {
+            winner.num = 2;
+            winner.verb = 'cut'
+        }
+        else if ( two === 'LIZARD' ) {
+            winner.num = 2;
+            winner.verb = 'eats'
+        }
     }
     else if ( one === 'LIZARD' ) {
-        if ( two === 'SPOCK' ) winner = 1;
-        else if ( two === 'PAPER') winner = 1;
-        else if ( two === 'SCISSORS' ) winner = 2;
-        else if ( two === 'ROCK' ) winner = 2;
+        if ( two === 'SPOCK' ) {
+            winner.num = 1;
+            winner.verb = 'poisons'
+        }
+        else if ( two === 'PAPER') {
+            winner.num = 1;
+            winner.verb = 'eats'
+        }
+        else if ( two === 'SCISSORS' ) {
+            winner.num = 2;
+            winner.verb = 'decapitates'
+        }
+        else if ( two === 'ROCK' ) {
+            winner.num = 2;
+            winner.verb = 'crushes'
+        }
     }
     else if ( one === 'SPOCK' ) {
-        if ( two === 'SCISSORS' ) winner = 1;
-        else if ( two === 'ROCK') winner = 1;
-        else if ( two === 'LIZARD' ) winner = 2;
-        else if ( two === 'PAPER' ) winner = 2;
+        if ( two === 'SCISSORS' ) {
+            winner.num = 1;
+            winner.verb = 'smashes'
+        }
+        else if ( two === 'ROCK') {
+            winner.num = 1;
+            winner.verb = 'vaporizes'
+        }
+        else if ( two === 'LIZARD' ) {
+            winner.num = 2;
+            winner.verb = 'poisons'
+        }
+        else if ( two === 'PAPER' ) {
+            winner.num = 2;
+            winner.verb = 'disproves'
+        }
     }
     else if ( one === 'ROCK' ) {
-        if ( two === 'SCISSORS' ) winner = 1;
-        else if ( two === 'LIZARD') winner = 1;
-        else if ( two === 'SPOCK' ) winner = 2;
-        else if ( two === 'PAPER' ) winner = 2;
+        if ( two === 'SCISSORS' ) {
+            winner.num = 1;
+            winner.verb = 'crushes'
+        }
+        else if ( two === 'LIZARD') {
+            winner.num = 1;
+            winner.verb = 'crushes'
+        }
+        else if ( two === 'SPOCK' ) {
+            winner.num = 2;
+            winner.verb = 'vaporizes'
+        }
+        else if ( two === 'PAPER' ) {
+            winner.num = 2;
+            winner.verb = 'covers'
+        }
     }
-    console.debug(one + " vs " + two + " - winner is " + (winner===1?one:two));
     return winner;
 }
 

@@ -2,16 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rock, Paper, Scissors, Lizard, Spock</title>
+    <link rel="stylesheet" type="text/css" href="css/spock.css">
     <link rel="stylesheet" type="text/css" href="css/rpsls.css">
 </head>
 <body>
-    <div class="rpslsTitle">Rock, Paper, Scissors, Lizard, Spock</div>
+    <div class="noHeader">&nbsp;</div>
+    <div class="titleDiv">Rock, Paper, Scissors, Lizard, Spock</div>
     <div class="hiddenDiv" id="waitDiv">
         <div id="waitDesc">There are no other players right now.</div>
         <div>Do you want to wait or play computer?</div>
-        <div><button onclick="waitAwhile();">wait</button></div>
-        <div><button onclick="playC();">computer</button></div>
+        <div><button class="spockBtn" onclick="waitAwhile();">wait</button></div>
+        <div><button class="spockBtn" onclick="playC();">computer</button></div>
     </div>
     <div class="checkingDiv" id="checkingDiv">
         <div>checking for other players...</div>
@@ -22,241 +25,19 @@
     <!-- ------------ playDiv ---------------- -->
     <div class="hiddenDiv" id="playDiv">
         <div>The competition: <span id="comp"></span> </div>
-        <div><button onclick="choose('ROCK');">ROCK</button> </div>
-        <div><button onclick="choose('PAPER');">PAPER</button> </div>
-        <div><button onclick="choose('SCISSORS');">SCISSORS</button> </div>
-        <div><button onclick="choose('LIZARD');">LIZARD</button> </div>
-        <div><button onclick="choose('SPOCK');">SPOCK</button> </div>
+        <div><button class="spockBtn" onclick="choose('ROCK');">ROCK</button> </div>
+        <div><button class="spockBtn" onclick="choose('PAPER');">PAPER</button> </div>
+        <div><button class="spockBtn" onclick="choose('SCISSORS');">SCISSORS</button> </div>
+        <div><button class="spockBtn" onclick="choose('LIZARD');">LIZARD</button> </div>
+        <div><button class="spockBtn" onclick="choose('SPOCK');">SPOCK</button> </div>
     </div>
-    <!-- -------------- winnerDiv ------------- -->
-    <div class="hiddenDiv" id="winnerDiv">
-        <div id="winnerText"></div>
+    <!-- -------------- resultsDiv ------------- -->
+    <div class="hiddenDiv" id="resultsDiv">
         <div id="winnerExplain"></div>
-        <div><button onclick="nextRound()">Next Round</button></div>
+        <div id="winnerText"></div>
+        <div><button id="resultsBtn" class="spockBtn"></button></div>
     </div>
-    <!-- -------------- championDiv ------------- -->
-    <div class="hiddenDiv" id="championDiv">
-        <div>You Win!</div>
-        <div><button onclick="landing()">Yea</button></div>
-    </div>
-    <!-- -------------- loserDiv ------------- -->
-    <div class="hiddenDiv" id="loserDiv">
-        <div>You lose...</div>
-        <div><button onclick="landing()">I'll be back...</button></div>
-    </div>
-<script type="text/javascript">
-
-    let token = localStorage.getItem("token");
-
-    document.getElementsByTagName("body")[0].onload = function() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'rpsls?start=player');
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                resp = JSON.parse(xhr.responseText);
-                if ( resp.error ) {
-                    if ( resp.error === 'no players') {
-                        // if no players, ask them if they want to wait or play against the computer
-                        document.getElementById('waitDiv').className = 'waitDiv';
-                        document.getElementById('checkingDiv').className = 'hiddenDiv';
-                    }
-                }
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send();
-    };
-
-    let waitTimer;
-
-    let dotsStr = ".";
-
-    function waitAwhile() {
-        document.getElementById('waitDiv').className = 'hiddenDiv';
-        document.getElementById('waitingDiv').className = 'waitingDiv';
-        dotsStr = ".";
-        document.getElementById('dots').innerHTML = dotsStr;
-        doWaitCheck();
-    }
-
-    function doWaitCheck() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'rpsls');
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                resp = JSON.parse(xhr.responseText);
-                if ( resp.status ) {
-                    if ( resp.status === 'still waiting') {
-                        // wait a while longer...
-                        dotsStr = dotsStr + ".";
-                        document.getElementById('dots').innerHTML = dotsStr;
-                        waitTimer = setTimeout( doWaitCheck, 5000);
-                    } else if ( resp.status === 'waited too long') {
-                        // if no players, ask them if they want to wait or play against the computer
-                        document.getElementById('waitDiv').className = 'waitDiv';
-                        document.getElementById('waitDesc').innerText = 'There are still no other players.';
-                        document.getElementById('waitingDiv').className = 'hiddenDiv';
-                    }
-                } else {
-                    startIt(resp);
-                }
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send();
-    };
-
-    function playC() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'rpsls?start=computer');
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                resp = JSON.parse(xhr.responseText);
-                if ( resp.error ) {
-                    alert("there was an error: " + resp.error);
-                } else {
-                    startIt(resp);
-                }
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send();
-    };
-
-    let compeditor = "";
-    let game = {
-        gameId: 0,
-        player1: "",
-        player2: "",
-        rounds: []
-    };
-
-    let roundNum = 1;
-    let username = "";
-
-    function startIt( newGame ) {
-        game = newGame;
-        console.log(JSON.stringify(game));
-        document.getElementById('waitDiv').className = 'hiddenDiv';
-        document.getElementById('waitingDiv').className = 'hiddenDiv';
-        document.getElementById('playDiv').className = 'playDiv';
-        username = localStorage.getItem('username');
-        if ( game.player1 === username ) {
-            compeditor = game.player2;
-        } else {
-            compeditor = game.player1;
-        }
-        document.getElementById('comp').innerText = compeditor;
-        roundNum = 1;
-    };
-
-    function choose( choice ) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'rpsls/' + game.gameId + "/" + roundNum);
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        let request = {
-            choice: choice
-        };
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                resp = JSON.parse(xhr.responseText);
-                if ( resp.status && resp.status === 'await results' ) {
-                    getResults();
-                } else {
-                    // there was a problem...
-                }
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send(JSON.stringify(request));
-    }
-
-    function getResults() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'rpsls/' + game.gameId + "/" + roundNum);
-        xhr.setRequestHeader("Content-Type","application/json");
-        xhr.setRequestHeader("token",token);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                resp = JSON.parse(xhr.responseText);
-                if ( resp.status && resp.status === 'await results' ) {
-                    console.log("waiting for round results...");
-                    waitTimer = setTimeout( getResults, 2000 );
-                    document.getElementById('playDiv').className = 'hiddenDiv';
-                    document.getElementById('waitingDiv').className = 'waitingDiv';
-                    dotsStr = ".";
-                    document.getElementById('dots').innerHTML = dotsStr;
-                } else {
-                    // have a winner...
-                    if ( resp.finalWinner && resp.finalWinner != 'NONE' ) {
-                        if ( resp.finalWinner === username ) {
-                            document.getElementById('playDiv').className = 'hiddenDiv';
-                            document.getElementById('waitingDiv').className = 'hiddenDiv';
-                            document.getElementById('winnerDiv').className = 'hiddenDiv';
-                            document.getElementById('championDiv').className = 'championDiv';
-                        } else {
-                            document.getElementById('playDiv').className = 'hiddenDiv';
-                            document.getElementById('waitingDiv').className = 'hiddenDiv';
-                            document.getElementById('winnerDiv').className = 'hiddenDiv';
-                            document.getElementById('loserDiv').className = 'loserDiv';
-                        }
-                    } else {
-                        document.getElementById('playDiv').className = 'hiddenDiv';
-                        document.getElementById('waitingDiv').className = 'hiddenDiv';
-                        document.getElementById('winnerDiv').className = 'winnerDiv';
-                        console.log("winner is " + resp.winner);
-                        if (resp.winner === 'Cat') {
-                            document.getElementById('winnerText').innerHTML = 'Both chose ' + resp.answer1;
-                            document.getElementById('winnerExplain').innerHTML = 'Try to be a little more original...';
-                        } else {
-                            if (resp.winner === username) {
-                                document.getElementById('winnerText').innerHTML = 'You Win! (this round...)';
-                            } else {
-                                document.getElementById('winnerText').innerHTML = 'You Lose... (there are still more rounds...)';
-                            }
-
-                            if (resp.player1 === resp.winner) {
-                                document.getElementById('winnerExplain').innerHTML = resp.answer1 + ' beats ' + resp.answer2;
-                            } else {
-                                document.getElementById('winnerExplain').innerHTML = resp.answer2 + ' beats ' + resp.answer1;
-                            }
-                        }
-                    }
-                }
-            } else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        };
-        xhr.send();
-    }
-
-    function nextRound() {
-        document.getElementById('playDiv').className = 'playDiv';
-        document.getElementById('waitingDiv').className = 'hiddenDiv';
-        document.getElementById('winnerDiv').className = 'hiddenDiv';
-        roundNum++;
-    }
-
-    function landing() {
-        window.location = 'landing.html';
-    }
-
-</script>
+    <div class="noFooter">&nbsp;</div>
+<script type="text/javascript" src="js/rpsls.js"></script>
 </body>
 </html>
