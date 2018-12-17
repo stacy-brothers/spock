@@ -98,6 +98,8 @@ let game = {
 
 let roundNum = 1;
 let username = "";
+let wins = 0;
+let losses = 0;
 
 function startIt( newGame ) {
     game = newGame;
@@ -113,6 +115,8 @@ function startIt( newGame ) {
     }
     document.getElementById('comp').innerText = compeditor;
     roundNum = 1;
+    wins = 0;
+    losses = 0;
 };
 
 function choose( choice ) {
@@ -180,22 +184,21 @@ function getResults() {
                     if (resp.winner === 'Cat') {
                         document.getElementById('winnerText').innerHTML = 'Both chose ' + resp.answer1;
                         document.getElementById('winnerExplain').innerHTML = 'Try to be a little more original...';
-                    } else {
-                        if (resp.winner === username) {
-                            document.getElementById('winnerText').innerHTML = 'You Win! (this round...)';
-                        } else {
-                            document.getElementById('winnerText').innerHTML = 'You Lose... (there are still more rounds...)';
-                        }
                     }
                     document.getElementById('resultsBtn').onclick = function() {
                         nextRound();
                     }
                 }
                 if (resp.player1 === resp.winner) {
-                    document.getElementById('winnerExplain').innerHTML = resp.answer1 + ' ' + resp.verb + ' ' + resp.answer2;
+                    document.getElementById('winnerExplain').innerHTML = 'Your ' + resp.answer1 + ' ' + resp.verb + ' ' + resp.answer2;
+                    wins ++;
                 } else if (resp.winner != 'Cat') {
-                    document.getElementById('winnerExplain').innerHTML = resp.answer2 + ' ' + resp.verb + ' ' + resp.answer1;
+                    document.getElementById('winnerExplain').innerHTML = resp.answer2 + ' ' + resp.verb + ' your ' + resp.answer1;
+                    losses ++;
                 }
+                if ( wins === 1 && losses === 1 ) document.getElementById('score').innerHTML = 'This round decides.';
+                else if ( wins === 1 ) document.getElementById('score').innerHTML = 'You are up one.';
+                else if ( losses === 1 ) document.getElementById('score').innerHTML = 'You are down one.';
             }
         } else {
             alert('Request failed.  Returned status of ' + xhr.status);
