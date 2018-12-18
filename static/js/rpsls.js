@@ -16,6 +16,8 @@ document.getElementsByTagName("body")[0].onload = function() {
                     document.getElementById('waitDiv').className = 'showingDiv';
                     document.getElementById('checkingDiv').className = 'hiddenDiv';
                 }
+            } else {
+                startIt(resp);
             }
         } else {
             alert('Request failed.  Returned status of ' + xhr.status);
@@ -105,6 +107,7 @@ function startIt( newGame ) {
     game = newGame;
     console.log(JSON.stringify(game));
     document.getElementById('waitDiv').className = 'hiddenDiv';
+    document.getElementById('checkingDiv').className = 'hiddenDiv';
     document.getElementById('waitingDiv').className = 'hiddenDiv';
     document.getElementById('playDiv').className = 'showingDiv';
     username = localStorage.getItem('username');
@@ -129,12 +132,14 @@ function choose( choice ) {
     };
     xhr.onload = function() {
         if (xhr.status === 200) {
-            console.log(xhr.responseText);
             resp = JSON.parse(xhr.responseText);
             if ( resp.status && resp.status === 'await results' ) {
                 getResults();
+            } else if ( resp.error === 'round complete') {
+                getResults();
             } else {
                 // there was a problem...
+                console.error('problem... : ' + xhr.responseText )
             }
         } else {
             alert('Request failed.  Returned status of ' + xhr.status);
@@ -189,11 +194,13 @@ function getResults() {
                         nextRound();
                     }
                 }
+                let your1 = your2 = "";
+                if ( username === resp.player1 ) your1 = 'your '; else your2 = 'your ';
                 if (resp.player1 === resp.winner) {
-                    document.getElementById('winnerExplain').innerHTML = 'Your ' + resp.answer1 + ' ' + resp.verb + ' ' + resp.answer2;
+                    document.getElementById('winnerExplain').innerHTML = your1 + resp.answer1 + ' ' + resp.verb + ' ' + your2 + resp.answer2;
                     wins ++;
                 } else if (resp.winner != 'Cat') {
-                    document.getElementById('winnerExplain').innerHTML = resp.answer2 + ' ' + resp.verb + ' your ' + resp.answer1;
+                    document.getElementById('winnerExplain').innerHTML = your2 + resp.answer2 + ' ' + resp.verb + ' ' + your1 + resp.answer1;
                     losses ++;
                 }
                 if ( wins === 1 && losses === 1 ) document.getElementById('score').innerHTML = 'This round decides.';

@@ -46,6 +46,15 @@ Object.freeze(SeqStore);
 
 let games = [];
 
+function removeGame( game ) {
+    for ( let i = 0; i < games.length; i++ ) {
+        if ( games[i] == game ) {
+            games.splice(i,1);
+            break;
+        }
+    }
+}
+
 function RPSLSService() {
 };
 
@@ -67,13 +76,26 @@ RPSLSService.prototype.wait = function ( username ) {
     console.debug("player: " + username + " is checking waiting queue...");
     // see if they got placed
     let game = games.find(g => g.player2 === username);
-    if ( !game ) game = games.find(g => g.player1 === username);
-    if ( game && game.complete != true ) {
+    while ( game && game.complete === true ) {
+        removeGame(game);
+        game = games.find(g => g.player2 === username);
+    }
+    console.debug(" player2 == username: " + JSON.stringify(game));
+    if ( !game ) {
+        game = games.find(g => g.player1 === username);
+        while ( game && game.complete === true ) {
+            removeGame(game);
+            game = games.find(g => g.player1 === username);
+        }
+    }
+    console.debug(" player1 == username: " + JSON.stringify(game));
+    if ( game ) {
         // they are in a game, return the start info.
         return game;
     } else {
         // am I in the queue?
         userQueue = QueueStore.get(username);
+        console.debug(" userQueue: " + JSON.stringify(userQueue));
         if (!userQueue) {
             // check to see if someone slipped into the queue since I started...
             if ( queue.length > 0 ) {
